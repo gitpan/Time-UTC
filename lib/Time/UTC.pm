@@ -51,12 +51,18 @@ Time::UTC - manipulation of UTC in terms of TAI
 	($day, $secs) = utc_ymdhms_to_instant(
 				$yr, $mo, $dy, $hr, $mi, $sc);
 
+	use Time::UTC qw(utc_day_to_cjdn utc_cjdn_to_day);
+
+	$cjdn = utc_day_to_cjdn($day);
+	$day = utc_cjdn_to_day($cjdn);
+
 =head1 DESCRIPTION
 
 This module encapsulates knowledge about the structure of the UTC time
 scale, including the leap seconds of the current incarnation.  This
 information is useful in manipulating times stored in a UTC-based format,
 or in converting between UTC and TAI (the underlying atomic time scale).
+It automatically downloads new UTC data as required to keep up to date.
 This is a low-level module, intended for use by other modules that need
 to know about UTC.  This module aims to be comprehensive and rigorous.
 
@@ -134,8 +140,8 @@ Like the pure measures of rotation, TAI has exactly 86400 seconds per day.
 Completely unlike those measures, TAI's seconds are, as far as possible,
 of identical duration, the duration with which the second was defined
 in 1967.  TAI was initially synchronised with Universal Time, so that
-TAI and UT1 describe the same instant as 1958-01-01T00:00:00.0.  TAI now
-runs independently of UT1, and at the time of writing (early 2005)
+TAI and UT2 describe the same instant as 1958-01-01T00:00:00.0.  TAI now
+runs independently of UT, and at the time of writing (early 2005)
 TAI is about 32.5 seconds ahead of UT1.
 
 =head2 UTC
@@ -204,17 +210,19 @@ use Exporter;
 use Math::BigRat 0.08;
 use Time::UTC::Segment;
 
-our $VERSION = "0.000";
+our $VERSION = "0.001";
 
 our @ISA = qw(Exporter);
 
 our @EXPORT_OK = qw(
-	utc_start_segment utc_start_tai_instant utc_start_utc_day
+	utc_start_segment foreach_utc_segment_when_complete
+	utc_start_tai_instant utc_start_utc_day
 	utc_segment_of_utc_day utc_segment_of_tai_instant
 	utc_day_leap_seconds utc_day_seconds utc_check_instant
 	tai_to_utc utc_to_tai
 	utc_secs_to_hms utc_hms_to_secs utc_day_to_ymd utc_ymd_to_day
 	utc_instant_to_ymdhms utc_ymdhms_to_instant
+	utc_day_to_cjdn utc_cjdn_to_day
 );
 
 =head1 FUNCTIONS
@@ -332,7 +340,8 @@ sub utc_segment_of_tai_instant($) {
 	my $final = @segments - 1;
 	my $max = $final;
 	while($max > $min + 1) {
-		my $try = int(($min + $max) / 2);
+		use integer;
+		my $try = ($min + $max) / 2;
 		if($instant >= $segments[$try]->start_tai_instant) {
 			$min = $try;
 		} else {
@@ -367,7 +376,8 @@ sub utc_segment_of_utc_day($) {
 	my $final = @segments - 1;
 	my $max = $final;
 	while($max > $min + 1) {
-		my $try = int(($min + $max) / 2);
+		use integer;
+		my $try = ($min + $max) / 2;
 		if($day >= $segments[$try]->start_utc_day) {
 			$min = $try;
 		} else {
@@ -682,8 +692,48 @@ sub utc_ymdhms_to_instant($$$$$$) {
 
 =back
 
+=head2 Calendar conversion
+
+=over
+
+=item utc_day_to_cjdn(DAY)
+
+This function takes a number of days since the TAI epoch and returns
+the corresponding Chronological Julian Day Number (a number of days
+since -4713-11-24).  CJDN is a standard day numbering that is useful as
+an interchange format between implementations of different calendars.
+There is no bound on the permissible day numbers; the function is not
+limited to days for which UTC is defined.
+
+=cut
+
+use constant _TAI_EPOCH_CJDN => Math::BigRat->new(2436205);
+
+sub utc_day_to_cjdn($) {
+	my($day) = @_;
+	croak "non-integer day $day is invalid" unless $day->is_int;
+	return _TAI_EPOCH_CJDN + $day;
+}
+
+=item utc_cjdn_to_day(CJDN)
+
+This performs the reverse of the translation that C<utc_day_to_cjdn> does.
+It takes a Chronological Julian Day Number and returns the number of
+days since the TAI epoch.  It does not impose any limit on the range.
+
+=cut
+
+sub utc_cjdn_to_day($) {
+	my($cjdn) = @_;
+	croak "invalid CJDN $cjdn" unless $cjdn->is_int;
+	return $cjdn - _TAI_EPOCH_CJDN;
+}
+
+=back
+
 =head1 SEE ALSO
 
+L<Date::ISO8601>,
 L<DateTime>,
 L<Time::UTC::Segment>
 
@@ -693,7 +743,7 @@ Andrew Main (Zefram) <zefram@fysh.org>
 
 =head1 COPYRIGHT
 
-Copyright (C) 2005 Andrew Main (Zefram) <zefram@fysh.org>
+Copyright (C) 2005, 2006 Andrew Main (Zefram) <zefram@fysh.org>
 
 This module is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.

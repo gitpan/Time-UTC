@@ -1,4 +1,4 @@
-use Test::More tests => 36*8 + 10;
+use Test::More tests => 37*8 + 10;
 
 BEGIN { use_ok "Time::UTC", qw(utc_start_segment); }
 
@@ -9,7 +9,7 @@ BEGIN { use_ok "Time::UTC", qw(utc_start_segment); }
 
 my $seg = utc_start_segment();
 
-for(my $n = 36; $n--; $seg = $seg->next) {
+for(my $n = 37; $n--; $seg = $seg->next) {
 	ok $seg->length_in_tai_seconds ==
 		$seg->end_tai_instant - $seg->start_tai_instant;
 	ok $seg->last_utc_day + 1 == $seg->end_utc_day;

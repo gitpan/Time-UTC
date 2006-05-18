@@ -59,7 +59,7 @@ use LWP::UserAgent;
 use Math::BigRat 0.08;
 use Time::Unix 1.02 ();
 
-our $VERSION = "0.000";
+our $VERSION = "0.001";
 
 @Time::UTC::Segment::Complete::ISA = qw(Time::UTC::Segment);
 @Time::UTC::Segment::Incomplete::ISA = qw(Time::UTC::Segment);
@@ -212,7 +212,7 @@ sub _add_data_from_tai_utc_dat($$) {
 }
 
 {
-	my $tai_utc_location = "ftp://maia.usno.navy.mil/ser7/tai-utc.dat";
+	my $tai_utc_location = "http://maia.usno.navy.mil/ser7/tai-utc.dat";
 	sub _download_latest_data() {
 		# Annoyingly, TAI-UTC data is not published with any
 		# indicator of the extent of its future validity.
@@ -225,17 +225,20 @@ sub _add_data_from_tai_utc_dat($$) {
 		my $unix_time = Time::Unix::time();
 		my $response = LWP::UserAgent->new->get($tai_utc_location);
 		return unless $response->code == 200;
-		my $now_mjd = int($unix_time / 86400) + _UNIX_EPOCH_MJD;
+		use integer;
+		my $now_mjd = $unix_time/86400 + _UNIX_EPOCH_MJD;
 		_add_data_from_tai_utc_dat($response->content, $now_mjd + 7*7);
 	}
 }
 
 {
+	my $last_download = 0;
 	my $wait_until = 0;
 	sub _maybe_download_latest_data() {
 		my $time = time;
-		return unless $time >= $wait_until;
-		$wait_until = $time + 20*86400 + rand(2*86400);
+		return unless $time >= $wait_until || $time < $last_download;
+		$last_download = $time;
+		$wait_until = $last_download + 20*86400 + rand(2*86400);
 		eval { _download_latest_data(); };
 	}
 }
@@ -526,7 +529,7 @@ Andrew Main (Zefram) <zefram@fysh.org>
 
 =head1 COPYRIGHT
 
-Copyright (C) 2005 Andrew Main (Zefram) <zefram@fysh.org>
+Copyright (C) 2005, 2006 Andrew Main (Zefram) <zefram@fysh.org>
 
 This module is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.
@@ -572,4 +575,5 @@ __DATA__
 1996 JAN  1 =JD 2450083.5  TAI-UTC=  30.0       S + (MJD - 41317.) X 0.0      S
 1997 JUL  1 =JD 2450630.5  TAI-UTC=  31.0       S + (MJD - 41317.) X 0.0      S
 1999 JAN  1 =JD 2451179.5  TAI-UTC=  32.0       S + (MJD - 41317.) X 0.0      S
-2005 JUL  1 =JD 2453552.5  unknown
+2006 JAN  1 =JD 2453736.5  TAI-UTC=  33.0       S + (MJD - 41317.) X 0.0      S
+2007 JAN  1 =JD 2454101.5  unknown

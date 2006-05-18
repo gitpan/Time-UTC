@@ -1,10 +1,18 @@
-use Test::More tests => 36*8 + 7;
+use Test::More tests => 1 + 3 + 16*37 + 6;
 
 BEGIN {
 	use_ok "Time::UTC", qw(
-		utc_start_segment utc_day_leap_seconds utc_day_seconds
+		utc_start_segment
+		utc_day_leap_seconds utc_day_seconds
+		utc_check_instant
 	);
 }
+
+use Math::BigRat;
+
+sub br(@) { Math::BigRat->new(@_) }
+
+my $epsilon = br("0.000000000001");
 
 {
 	no warnings "redefine";
@@ -17,23 +25,46 @@ eval { utc_day_leap_seconds($seg->start_utc_day - 1); };
 like $@, qr/\Aday \d+ precedes the start of UTC /;
 eval { utc_day_seconds($seg->start_utc_day - 1); };
 like $@, qr/\Aday \d+ precedes the start of UTC /;
+eval { utc_check_instant($seg->start_utc_day - 1, br(0)); };
+like $@, qr/\Aday \d+ precedes the start of UTC /;
 
-for(my $n = 36; $n--; $seg = $seg->next) {
+for(my $n = 37; $n--; $seg = $seg->next) {
 	ok utc_day_leap_seconds($seg->start_utc_day) == 0;
 	ok utc_day_seconds($seg->start_utc_day) == 86400;
+	eval { utc_check_instant($seg->start_utc_day, -$epsilon); };
+	like $@, qr/ is out of range /;
+	eval { utc_check_instant($seg->start_utc_day, br(0)); };
+	is $@, "";
+	eval { utc_check_instant($seg->start_utc_day, 86400 - $epsilon); };
+	is $@, "";
+	eval { utc_check_instant($seg->start_utc_day, br(86400)); };
+	like $@, qr/ is out of range /;
 	ok utc_day_leap_seconds($seg->start_utc_day + 1) == 0;
 	ok utc_day_seconds($seg->start_utc_day + 1) == 86400;
 	ok utc_day_leap_seconds($seg->last_utc_day - 1) == 0;
 	ok utc_day_seconds($seg->last_utc_day - 1) == 86400;
+	my $lastlen = $seg->last_day_utc_seconds;
 	ok utc_day_leap_seconds($seg->last_utc_day) == $seg->leap_utc_seconds;
-	ok utc_day_seconds($seg->last_utc_day) == $seg->last_day_utc_seconds;
+	ok utc_day_seconds($seg->last_utc_day) == $lastlen;
+	eval { utc_check_instant($seg->last_utc_day, -$epsilon); };
+	like $@, qr/ is out of range /;
+	eval { utc_check_instant($seg->last_utc_day, br(0)); };
+	is $@, "";
+	eval { utc_check_instant($seg->last_utc_day, $lastlen - $epsilon); };
+	is $@, "";
+	eval { utc_check_instant($seg->last_utc_day, $lastlen); };
+	like $@, qr/ is out of range /;
 }
 
 eval { utc_day_leap_seconds($seg->start_utc_day); };
 like $@, qr/\Aday \d+ has no UTC definition yet /;
 eval { utc_day_seconds($seg->start_utc_day); };
 like $@, qr/\Aday \d+ has no UTC definition yet /;
+eval { utc_check_instant($seg->start_utc_day, br(0)); };
+like $@, qr/\Aday \d+ has no UTC definition yet /;
 eval { utc_day_leap_seconds($seg->start_utc_day + 1); };
 like $@, qr/\Aday \d+ has no UTC definition yet /;
 eval { utc_day_seconds($seg->start_utc_day + 1); };
+like $@, qr/\Aday \d+ has no UTC definition yet /;
+eval { utc_check_instant($seg->start_utc_day + 1, br(0)); };
 like $@, qr/\Aday \d+ has no UTC definition yet /;

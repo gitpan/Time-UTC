@@ -6,10 +6,12 @@ Makefile.PL
 README
 lib/Time/UTC.pm
 lib/Time/UTC/Segment.pm
+t/cjdn.t
 t/day.t
 t/hms.t
 t/seg_of.t
 t/segments.t
 t/start.t
+t/when_comp.t
 t/ymd.t
 t/ymdhms.t

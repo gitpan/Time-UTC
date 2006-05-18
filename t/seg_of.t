@@ -1,4 +1,4 @@
-use Test::More tests => 36*4 + 7;
+use Test::More tests => 37*4 + 7;
 
 BEGIN {
 	use_ok "Time::UTC", qw(
@@ -22,7 +22,7 @@ like $@, qr/\Aday \d+ precedes the start of UTC /;
 eval { utc_segment_of_tai_instant($seg->start_tai_instant - $epsilon); };
 like $@, qr/\Ainstant \S+ precedes the start of UTC /;
 
-for(my $n = 36; $n--; $seg = $seg->next) {
+for(my $n = 37; $n--; $seg = $seg->next) {
 	ok utc_segment_of_utc_day($seg->start_utc_day) == $seg;
 	ok utc_segment_of_tai_instant($seg->start_tai_instant) == $seg;
 	ok utc_segment_of_utc_day($seg->last_utc_day) == $seg;
