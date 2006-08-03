@@ -1,3 +1,15 @@
+version 0.002; 2006-08-03
+
+  * include "use" directive in synopsis for Time::UTC::Segment
+
+  * add test t/builtin.t of whether builtin TAI-UTC knowledge works at all
+
+  * use "=> 0" instead of "=> undef" in unversioned dependencies in
+    Makefile.PL
+
+  * don't include underscore in string version of module version numbers
+    in Makefile.PL
+
 version 0.001; 2006-05-18
 
   * new functions utc_day_to_cjdn() and utc_cjdn_to_day() for

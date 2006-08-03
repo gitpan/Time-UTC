@@ -4,6 +4,8 @@ Time::UTC::Segment - segments of UTC definition
 
 =head1 SYNOPSIS
 
+	use Time::UTC::Segment;
+
 	$seg = Time::UTC::Segment->start;
 
 	$tai = $seg->start_tai_instant;
@@ -59,7 +61,7 @@ use LWP::UserAgent;
 use Math::BigRat 0.08;
 use Time::Unix 1.02 ();
 
-our $VERSION = "0.001";
+our $VERSION = "0.002";
 
 @Time::UTC::Segment::Complete::ISA = qw(Time::UTC::Segment);
 @Time::UTC::Segment::Incomplete::ISA = qw(Time::UTC::Segment);

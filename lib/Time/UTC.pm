@@ -210,7 +210,7 @@ use Exporter;
 use Math::BigRat 0.08;
 use Time::UTC::Segment;
 
-our $VERSION = "0.001";
+our $VERSION = "0.002";
 
 our @ISA = qw(Exporter);
 
