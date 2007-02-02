@@ -61,7 +61,7 @@ use LWP::UserAgent;
 use Math::BigRat 0.08;
 use Time::Unix 1.02 ();
 
-our $VERSION = "0.002";
+our $VERSION = "0.003";
 
 @Time::UTC::Segment::Complete::ISA = qw(Time::UTC::Segment);
 @Time::UTC::Segment::Incomplete::ISA = qw(Time::UTC::Segment);
@@ -531,7 +531,7 @@ Andrew Main (Zefram) <zefram@fysh.org>
 
 =head1 COPYRIGHT
 
-Copyright (C) 2005, 2006 Andrew Main (Zefram) <zefram@fysh.org>
+Copyright (C) 2005, 2006, 2007 Andrew Main (Zefram) <zefram@fysh.org>
 
 This module is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.
@@ -578,4 +578,4 @@ __DATA__
 1997 JUL  1 =JD 2450630.5  TAI-UTC=  31.0       S + (MJD - 41317.) X 0.0      S
 1999 JAN  1 =JD 2451179.5  TAI-UTC=  32.0       S + (MJD - 41317.) X 0.0      S
 2006 JAN  1 =JD 2453736.5  TAI-UTC=  33.0       S + (MJD - 41317.) X 0.0      S
-2007 JAN  1 =JD 2454101.5  unknown
+2008 JAN  1 =JD 2454466.5  unknown

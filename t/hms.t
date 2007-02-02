@@ -2,7 +2,29 @@ use Test::More tests => 24;
 
 BEGIN { use_ok "Time::UTC", qw(utc_secs_to_hms utc_hms_to_secs); }
 
-use Math::BigRat;
+use Math::BigRat 0.04;
+
+sub match_val($$) {
+	my($a, $b) = @_;
+	ok ref($a) eq ref($b) && $a == $b;
+}
+
+sub match_vec($$) {
+	my($a, $b) = @_;
+	unless(@$a == @$b) {
+		ok 0;
+		return;
+	}
+	for(my $i = 0; $i != @$a; $i++) {
+		my $aval = $a->[$i];
+		my $bval = $b->[$i];
+		unless(ref($aval) eq ref($bval) && $aval == $bval) {
+			ok 0;
+			return;
+		}
+	}
+	ok 1;
+}
 
 sub br(@) { Math::BigRat->new(@_) }
 
@@ -28,8 +50,8 @@ like $@, qr/\Ainvalid second number /;
 
 sub check($$$$) {
 	my($secs, $hr, $mi, $sc) = @_;
-	is_deeply [ utc_secs_to_hms($secs) ], [ $hr, $mi, $sc ];
-	is utc_hms_to_secs($hr, $mi, $sc), $secs;
+	match_vec [ utc_secs_to_hms($secs) ], [ $hr, $mi, $sc ];
+	match_val utc_hms_to_secs($hr, $mi, $sc), $secs;
 }
 
 check(br(0), br(0), br(0), br(0));

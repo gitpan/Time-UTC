@@ -10,6 +10,7 @@ t/builtin.t
 t/cjdn.t
 t/day.t
 t/hms.t
+t/mjdn.t
 t/seg_of.t
 t/segments.t
 t/start.t

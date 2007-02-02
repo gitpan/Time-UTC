@@ -2,7 +2,29 @@ use Test::More tests => 41;
 
 BEGIN { use_ok "Time::UTC", qw(utc_day_to_ymd utc_ymd_to_day); }
 
-use Math::BigRat;
+use Math::BigRat 0.04;
+
+sub match_val($$) {
+	my($a, $b) = @_;
+	ok ref($a) eq ref($b) && $a == $b;
+}
+
+sub match_vec($$) {
+	my($a, $b) = @_;
+	unless(@$a == @$b) {
+		ok 0;
+		return;
+	}
+	for(my $i = 0; $i != @$a; $i++) {
+		my $aval = $a->[$i];
+		my $bval = $b->[$i];
+		unless(ref($aval) eq ref($bval) && $aval == $bval) {
+			ok 0;
+			return;
+		}
+	}
+	ok 1;
+}
 
 sub br(@) { Math::BigRat->new(@_) }
 
@@ -22,8 +44,8 @@ foreach my $dy (br(0), br(29), br("0.5")) {
 
 sub check($$$$) {
 	my($day, $yr, $mo, $dy) = @_;
-	is_deeply [ utc_day_to_ymd($day) ], [ $yr, $mo, $dy ];
-	is utc_ymd_to_day($yr, $mo, $dy), $day;
+	match_vec [ utc_day_to_ymd($day) ], [ $yr, $mo, $dy ];
+	match_val utc_ymd_to_day($yr, $mo, $dy), $day;
 }
 
 check(br(365*-58 - 14), br(1900), br(1), br(1));

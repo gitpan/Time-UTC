@@ -51,7 +51,13 @@ Time::UTC - manipulation of UTC in terms of TAI
 	($day, $secs) = utc_ymdhms_to_instant(
 				$yr, $mo, $dy, $hr, $mi, $sc);
 
-	use Time::UTC qw(utc_day_to_cjdn utc_cjdn_to_day);
+	use Time::UTC qw(
+		utc_day_to_mjdn utc_mjdn_to_day
+		utc_day_to_cjdn utc_cjdn_to_day
+	);
+
+	$mjdn = utc_day_to_mjdn($day);
+	$day = utc_mjdn_to_day($mjdn);
 
 	$cjdn = utc_day_to_cjdn($day);
 	$day = utc_cjdn_to_day($cjdn);
@@ -66,7 +72,7 @@ It automatically downloads new UTC data as required to keep up to date.
 This is a low-level module, intended for use by other modules that need
 to know about UTC.  This module aims to be comprehensive and rigorous.
 
-=head1 ORIGIN OF UTC
+=head1 HISTORY OF UTC
 
 Until the middle of the twentieth century, the passage of time was
 measured primarily against the astronomical motions of the Earth and
@@ -74,7 +80,7 @@ other bodies.  These motions are very regular, and indeed were the
 most temporally regular phenomena available to pre-industrial society.
 After the invention of the caesium-based atomic clock, a gradual
 transition from astronomic to atomic timekeeping began.  The hyperfine
-structure of caesium is more regular than the Earth's motion, and so
+transition of caesium is more regular than the Earth's motion, and so
 makes a better time standard.  Unfortunately, this means that during the
 transition phase there are two disagreeing time standards in use, and we
 must jump through hoops to accommodate both.  UTC is one of these hoops.
@@ -91,13 +97,15 @@ of I<angle> than of time.  Thus, the hour refers to a rotation of exactly
 
 Because the Earth's rotation is non-uniform, each day is a slightly
 different length, and so the duration of the second, as defined above,
-also varies over time.  This is not good in a time standard.  In order to
-make the time as stable as possible, the non-uniformities of the Earth's
-rotation need to be accounted for.  The use of I<mean solar time> rather
-than I<apparent solar time> smooths out variation in the apparent daily
-motion of the Sun over the course of the year.  The mean solar time at
-Greenwich is known as I<Universal Time>, and specifically as I<UT0>.
-I<UT1> and I<UT2> are further smoothed versions of Universal Time.
+also varies over time.  This is not good in a time standard.  In order
+to make the time as stable as possible, the non-uniformities of the
+Earth's rotation need to be accounted for.  The use of I<mean solar
+time> rather than I<apparent solar time> smooths out variation in the
+apparent daily motion of the Sun over the course of the year that are
+due to the non-circularity of the Earth's orbit.  The mean solar time
+at Greenwich is known as I<Universal Time>, and specifically as I<UT1>.
+I<UT2>, I<UT1R>, and I<UT2R> are smoothed versions of Universal Time,
+removing periodic seasonal and tidal variations.
 
 But however smoothed these scales get, they remain fundamentally measures
 of angle rather than time.  They are not uniform over time.
@@ -113,9 +121,11 @@ similar to that of the traditional angle-based second, despite being
 fundamentally different in intent.
 
 The second in this sense was originally defined as 1/86400 of the mean
-duration of a solar day.  In 1956 the second was redefined in terms of
-the length of the tropical year 1900.  This definition was superseded
-in 1967 by a definition based on the hyperfine transition of caesium.
+duration of a solar day.  In 1956 the second was redefined in terms of the
+length of the tropical year 1900 (the "ephemeris second"), in recognition
+of the non-uniformity of the Earth's rotation.  This definition was
+superseded in 1967 by a definition based on the hyperfine transition
+of caesium, following a decade of experience with early caesium clocks.
 That definition was refined in 1997, and further refinements may happen
 in the future.
 
@@ -126,10 +136,12 @@ measurement of the Earth's spin.
 
 =head2 TAI
 
-Time started to be measured internationally using atomic clocks starting
-(nominally) at the beginning of 1958.  A time scale was introduced, known
-as I<International Atomic Time> or I<TAI>.  TAI is strictly a measure
-of time as determined by atomic clocks, and is entirely indepenent of
+Time started to be measured using atomic clocks in 1955, and the first
+formal atomic time scale started at the beginning of 1958.  In 1961
+an international effort constructed a new time scale, synchronised
+with the first one, which eventually (in 1971) came to be known as
+I<International Atomic Time> or I<TAI>.  TAI is strictly a measure of
+time as determined by atomic clocks, and is entirely independent of
 the Earth's daily revolutions.  However, it uses the terminology and
 superficial appearance of the time scales that went before it, which is
 to say the angle scales.  Thus a point on the TAI scale is conventionally
@@ -139,10 +151,12 @@ of hours, minutes, and seconds.
 Like the pure measures of rotation, TAI has exactly 86400 seconds per day.
 Completely unlike those measures, TAI's seconds are, as far as possible,
 of identical duration, the duration with which the second was defined
-in 1967.  TAI was initially synchronised with Universal Time, so that
-TAI and UT2 describe the same instant as 1958-01-01T00:00:00.0.  TAI now
-runs independently of UT, and at the time of writing (early 2005)
-TAI is about 32.5 seconds ahead of UT1.
+in 1967.  TAI, through its predecessor atomic time scale, was initially
+synchronised with Universal Time, so that TAI and UT2 describe the same
+instant as 1958-01-01T00:00:00.0 (at least, according to the United States
+Naval Observatory's determination of UT2).  TAI now runs independently
+of UT, and at the time of writing (early 2005) TAI is about 32.5 seconds
+ahead of UT1.
 
 =head2 UTC
 
@@ -158,27 +172,67 @@ standard.  However, the relation between UTC and TAI is determined only
 a few months in advance.  The relation changes over time, so that UTC
 remains an approximation of UT1.
 
-There have been two forms of UTC so far.  The initial form, from the start
-of 1961, used a second of a different length from the standard second, but
-a fixed multiple of it.  (Confusingly, this is a third type of "second".)
-UTC was offset from TAI, with the offset continuously changing due to
-the differing lengths of the second.  The length of the UTC second was
-occasionally changed, and there were also occasional jumps in UTC time,
-both forward and backward, most commonly by 0.1 s at a time.  Jumps were
-achieved by making a UTC day have a length other than 86400 UTC seconds.
+This concept behind UTC originates with the WWV radio time signal station
+in the USA.  Up until 1956 it had, like all time signal stations at
+the time, transmitted the closest achievable approximation of UT1.
+In 1956, with atomic clocks now available, the National Bureau of
+Standards started to base WWV's signals on atomic frequency standards.
+Rather than continuously adjust the frequency to track UT1, as had been
+previously done, they set the frequency once to match the rate of UT1
+and then let it diverge by accurately maintaining the same frequency.
+When the divergence grew too large, the time signals were stepped by 20
+ms at a time to keep the magnitude of the difference within chosen limits.
 
-Since 1972, the form of UTC has been less complicated.  In this era
-the UTC second is identical in duration to the TAI second, and the
-difference between UTC and TAI is always an integral number of seconds.
-There are occasional jumps of UTC time by one second at a time.  So far
-there have only been backward jumps (by having an 86401 s UTC day),
-but forward jumps are also theoretically possible.
+This new system, deliberately accepting a visible difference between
+signalled time and astronomical time, was initially controversial, but
+soon caught on.  Other time signal stations operated by other bodies,
+such as the National Physical Laboratory in the UK, started to use the
+same type of scheme.  This raised the problem of keeping the time signals
+synchronised, so international agreement became necessary.
+
+In 1960, with the frequency of the caesium hyperfine transition now
+established (though it did not become the SI standard until 1967),
+a frequency offset for time signals was internationally agreed,
+chosen to match the then-current rate of UT2.  It was decided that
+the International Time Bureau (BIH, Bureau International de l'Heure)
+would henceforth determine what frequency offset to use, changing it if
+necessary at each year end, and also coordinate the necessary time steps
+to closely approximate UT2.  Thus was international synchronisation of
+time signals achieved.
+
+From the beginning of 1961 this system was formalised as Coordinated
+Universal Time (UTC).  Time steps, both forward and backward, were always
+introduced at midnight, achieved by making a UTC day have a length other
+than 86400 UTC seconds.  The time steps of 20 ms having been found to be
+inconveniently frequent, it was decided to use steps of 50 ms instead.
+This was soon increased to 100 ms.  This arrangement lasted until the
+end of 1971.
+
+The frequency offsets, which when correctly chosen avoided the need for
+many time steps, were found to be inconvenient.  Radio time signals
+commonly provided per-second pulses that were phase-locked to the
+carrier signal, and maintaining that relation meant that the frequency
+offset to make atomic time match UT2 had to be applied to the carrier
+frequency also.  This made the carrier unreliable as a frequency standard,
+which was a secondary use made of it.
+
+To maintain the utility of time signals as frequency standards, from
+the beginning of 1972 the frequency offset was permanently set to zero.
+Henceforth the UTC second is identical in duration to the TAI second.
+The size of the time steps was increased again, to one second, to make the
+steps less frequent and to avoid phase shifts in per-second pulse signals.
+An irregular time step was used to bring UTC to an integral number of
+seconds offset from TAI, where it henceforth remains.
+
+Because of the zero frequency offset, the new form of UTC has only had
+backward jumps (by having an 86401 s UTC day).  Forward jumps are also
+theoretically possible, but unlikely to ever occur.
 
 Notice that the new form of UTC is more similar to TAI than the old
-form was.  This appears to be part of the gradual switch from solar time
-to atomic time.  It has been proposed that in the near future the system
-of discontinuities in UTC will terminate, resulting in a purely atomic
-time scale.
+form was.  This appears to be part of the gradual switch from solar
+time to atomic time.  It has been proposed (controversially) that in
+the near future the system of irregularities in UTC will terminate,
+resulting in a purely atomic time scale.
 
 =head1 STRUCTURE OF UTC
 
@@ -210,7 +264,7 @@ use Exporter;
 use Math::BigRat 0.08;
 use Time::UTC::Segment;
 
-our $VERSION = "0.002";
+our $VERSION = "0.003";
 
 our @ISA = qw(Exporter);
 
@@ -222,6 +276,7 @@ our @EXPORT_OK = qw(
 	tai_to_utc utc_to_tai
 	utc_secs_to_hms utc_hms_to_secs utc_day_to_ymd utc_ymd_to_day
 	utc_instant_to_ymdhms utc_ymdhms_to_instant
+	utc_day_to_mjdn utc_mjdn_to_day
 	utc_day_to_cjdn utc_cjdn_to_day
 );
 
@@ -696,6 +751,38 @@ sub utc_ymdhms_to_instant($$$$$$) {
 
 =over
 
+=item utc_day_to_mjdn(DAY)
+
+This function takes a number of days since the TAI epoch and returns
+the corresponding Modified Julian Day Number (a number of days since
+1858-11-17 UT).  MJDN is a standard numbering for days in Universal Time.
+There is no bound on the permissible day numbers; the function is not
+limited to days for which UTC is defined.
+
+=cut
+
+use constant _TAI_EPOCH_MJDN => Math::BigRat->new(36204);
+
+sub utc_day_to_mjdn($) {
+	my($day) = @_;
+	croak "non-integer day $day is invalid" unless $day->is_int;
+	return _TAI_EPOCH_MJDN + $day;
+}
+
+=item utc_mjdn_to_day(MJDN)
+
+This performs the reverse of the translation that C<utc_day_to_mjdn> does.
+It takes a Modified Julian Day Number and returns the number of days
+since the TAI epoch.  It does not impose any limit on the range.
+
+=cut
+
+sub utc_mjdn_to_day($) {
+	my($mjdn) = @_;
+	croak "invalid MJDN $mjdn" unless $mjdn->is_int;
+	return $mjdn - _TAI_EPOCH_MJDN;
+}
+
 =item utc_day_to_cjdn(DAY)
 
 This function takes a number of days since the TAI epoch and returns
@@ -734,8 +821,11 @@ sub utc_cjdn_to_day($) {
 =head1 SEE ALSO
 
 L<Date::ISO8601>,
+L<Date::JD>,
 L<DateTime>,
-L<Time::UTC::Segment>
+L<Time::UTC::Now>,
+L<Time::UTC::Segment>,
+L<Time::TAI>
 
 =head1 AUTHOR
 
@@ -743,7 +833,7 @@ Andrew Main (Zefram) <zefram@fysh.org>
 
 =head1 COPYRIGHT
 
-Copyright (C) 2005, 2006 Andrew Main (Zefram) <zefram@fysh.org>
+Copyright (C) 2005, 2006, 2007 Andrew Main (Zefram) <zefram@fysh.org>
 
 This module is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.

@@ -7,7 +7,7 @@ BEGIN {
 	);
 }
 
-use Math::BigRat;
+use Math::BigRat 0.02;
 
 {
 	no warnings "redefine";

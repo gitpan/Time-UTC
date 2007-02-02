@@ -8,7 +8,12 @@ BEGIN {
 	);
 }
 
-use Math::BigRat;
+use Math::BigRat 0.04;
+
+sub match($$) {
+	my($a, $b) = @_;
+	ok ref($a) eq ref($b) && $a == $b;
+}
 
 sub br(@) { Math::BigRat->new(@_) }
 
@@ -29,8 +34,8 @@ eval { utc_check_instant($seg->start_utc_day - 1, br(0)); };
 like $@, qr/\Aday \d+ precedes the start of UTC /;
 
 for(my $n = 37; $n--; $seg = $seg->next) {
-	ok utc_day_leap_seconds($seg->start_utc_day) == 0;
-	ok utc_day_seconds($seg->start_utc_day) == 86400;
+	match utc_day_leap_seconds($seg->start_utc_day), br(0);
+	match utc_day_seconds($seg->start_utc_day), br(86400);
 	eval { utc_check_instant($seg->start_utc_day, -$epsilon); };
 	like $@, qr/ is out of range /;
 	eval { utc_check_instant($seg->start_utc_day, br(0)); };
@@ -39,13 +44,13 @@ for(my $n = 37; $n--; $seg = $seg->next) {
 	is $@, "";
 	eval { utc_check_instant($seg->start_utc_day, br(86400)); };
 	like $@, qr/ is out of range /;
-	ok utc_day_leap_seconds($seg->start_utc_day + 1) == 0;
-	ok utc_day_seconds($seg->start_utc_day + 1) == 86400;
-	ok utc_day_leap_seconds($seg->last_utc_day - 1) == 0;
-	ok utc_day_seconds($seg->last_utc_day - 1) == 86400;
+	match utc_day_leap_seconds($seg->start_utc_day + 1), br(0);
+	match utc_day_seconds($seg->start_utc_day + 1), br(86400);
+	match utc_day_leap_seconds($seg->last_utc_day - 1), br(0);
+	match utc_day_seconds($seg->last_utc_day - 1), br(86400);
 	my $lastlen = $seg->last_day_utc_seconds;
-	ok utc_day_leap_seconds($seg->last_utc_day) == $seg->leap_utc_seconds;
-	ok utc_day_seconds($seg->last_utc_day) == $lastlen;
+	match utc_day_leap_seconds($seg->last_utc_day), $seg->leap_utc_seconds;
+	match utc_day_seconds($seg->last_utc_day), $lastlen;
 	eval { utc_check_instant($seg->last_utc_day, -$epsilon); };
 	like $@, qr/ is out of range /;
 	eval { utc_check_instant($seg->last_utc_day, br(0)); };

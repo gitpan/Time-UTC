@@ -7,21 +7,28 @@ BEGIN { use_ok "Time::UTC", qw(utc_start_segment); }
 	sub Time::UTC::Segment::_download_latest_data() { }
 }
 
+use Math::BigRat 0.04;
+
+sub match($$) {
+	my($a, $b) = @_;
+	ok ref($a) eq ref($b) && $a == $b;
+}
+
 my $seg = utc_start_segment();
 
 for(my $n = 37; $n--; $seg = $seg->next) {
-	ok $seg->length_in_tai_seconds ==
+	match $seg->length_in_tai_seconds,
 		$seg->end_tai_instant - $seg->start_tai_instant;
-	ok $seg->last_utc_day + 1 == $seg->end_utc_day;
-	ok $seg->last_day_utc_seconds == 86400 + $seg->leap_utc_seconds;
-	ok $seg->length_in_utc_seconds ==
+	match $seg->last_utc_day + 1, $seg->end_utc_day;
+	match $seg->last_day_utc_seconds, 86400 + $seg->leap_utc_seconds;
+	match $seg->length_in_utc_seconds,
 		86400 * ($seg->last_utc_day - $seg->start_utc_day) +
 			$seg->last_day_utc_seconds;
-	ok $seg->length_in_tai_seconds ==
+	match $seg->length_in_tai_seconds,
 		$seg->length_in_utc_seconds * $seg->utc_second_length;
-	ok $seg->next->prev == $seg;
-	ok $seg->end_tai_instant == $seg->next->start_tai_instant;
-	ok $seg->end_utc_day == $seg->next->start_utc_day;
+	match $seg->next->prev, $seg;
+	match $seg->end_tai_instant, $seg->next->start_tai_instant;
+	match $seg->end_utc_day, $seg->next->start_utc_day;
 }
 
 ok $seg->utc_second_length == 1;

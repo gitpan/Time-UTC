@@ -12,7 +12,7 @@ BEGIN {
 	sub Time::UTC::Segment::_download_latest_data() { }
 }
 
-use Math::BigRat;
+use Math::BigRat 0.03;
 
 my $epsilon = Math::BigRat->new("0.000000000001");
 my $seg = utc_start_segment();
