@@ -1,4 +1,5 @@
 .cvsignore
+Build.PL
 Changes
 MANIFEST
 META.yml
@@ -11,9 +12,12 @@ t/cjdn.t
 t/day.t
 t/hms.t
 t/mjdn.t
+t/pod_cvg.t
+t/pod_syn.t
 t/seg_of.t
 t/segments.t
 t/start.t
 t/when_comp.t
 t/ymd.t
 t/ymdhms.t
+SIGNATURE    Added here by Module::Build

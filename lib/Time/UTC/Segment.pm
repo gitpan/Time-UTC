@@ -61,7 +61,7 @@ use LWP::UserAgent;
 use Math::BigRat 0.08;
 use Time::Unix 1.02 ();
 
-our $VERSION = "0.003";
+our $VERSION = "0.004";
 
 @Time::UTC::Segment::Complete::ISA = qw(Time::UTC::Segment);
 @Time::UTC::Segment::Incomplete::ISA = qw(Time::UTC::Segment);
@@ -131,7 +131,7 @@ sub _add_data($$$$$$) {
 	}, "Time::UTC::Segment::Incomplete");
 	bless $seg, "Time::UTC::Segment::Complete";
 	foreach my $what (@{$seg->{when_complete}}) {
-		eval { $what->() };
+		eval { local $SIG{__DIE__}; $what->(); };
 	}
 	delete $seg->{when_complete};
 }
@@ -241,7 +241,7 @@ sub _add_data_from_tai_utc_dat($$) {
 		return unless $time >= $wait_until || $time < $last_download;
 		$last_download = $time;
 		$wait_until = $last_download + 20*86400 + rand(2*86400);
-		eval { _download_latest_data(); };
+		eval { local $SIG{__DIE__}; _download_latest_data(); };
 	}
 }
 
@@ -267,7 +267,7 @@ All numeric values are returned as C<Math::BigRat> objects.
 sub _data_unavailable($$) {
 	my($self, $method) = @_;
 	if(defined $try_to_extend_knowledge) {
-		eval {
+		eval { local $SIG{__DIE__};
 			my $ttek = $try_to_extend_knowledge;
 			$try_to_extend_knowledge = undef;
 			$ttek->();
@@ -487,7 +487,7 @@ see C<foreach_utc_segment_when_complete> in C<Time::UTC>.
 
 sub Time::UTC::Segment::Complete::when_complete($$) {
 	my($self, $what) = @_;
-	eval { $what->() };
+	eval { local $SIG{__DIE__}; $what->(); };
 }
 
 sub Time::UTC::Segment::Incomplete::when_complete($$) {
@@ -532,6 +532,8 @@ Andrew Main (Zefram) <zefram@fysh.org>
 =head1 COPYRIGHT
 
 Copyright (C) 2005, 2006, 2007 Andrew Main (Zefram) <zefram@fysh.org>
+
+=head1 LICENSE
 
 This module is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.
@@ -578,4 +580,4 @@ __DATA__
 1997 JUL  1 =JD 2450630.5  TAI-UTC=  31.0       S + (MJD - 41317.) X 0.0      S
 1999 JAN  1 =JD 2451179.5  TAI-UTC=  32.0       S + (MJD - 41317.) X 0.0      S
 2006 JAN  1 =JD 2453736.5  TAI-UTC=  33.0       S + (MJD - 41317.) X 0.0      S
-2008 JAN  1 =JD 2454466.5  unknown
+2008 JUL  1 =JD 2454648.5  unknown

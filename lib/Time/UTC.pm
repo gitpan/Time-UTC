@@ -260,14 +260,12 @@ use warnings;
 use strict;
 
 use Carp qw(croak);
-use Exporter;
 use Math::BigRat 0.08;
 use Time::UTC::Segment;
 
-our $VERSION = "0.003";
+our $VERSION = "0.004";
 
-our @ISA = qw(Exporter);
-
+use base "Exporter";
 our @EXPORT_OK = qw(
 	utc_start_segment foreach_utc_segment_when_complete
 	utc_start_tai_instant utc_start_utc_day
@@ -351,7 +349,7 @@ sub foreach_utc_segment_when_complete(&) {
 	$setup_for_segment = sub($) {
 		my($seg) = @_;
 		$seg->when_complete(sub() {
-			eval { $what->($seg); };
+			eval { local $SIG{__DIE__}; $what->($seg); };
 			$setup_for_segment->($seg->next);
 		});
 	};
@@ -408,7 +406,7 @@ sub utc_segment_of_tai_instant($) {
 	}
 	if($max == $final &&
 			$instant >= $segments[$final]->start_tai_instant) {
-		eval { $segments[$final]->next; };
+		eval { local $SIG{__DIE__}; $segments[$final]->next; };
 		goto TRY_AGAIN if @segments != $final + 1;
 		croak "instant $instant has no UTC definition yet";
 	}
@@ -443,7 +441,7 @@ sub utc_segment_of_utc_day($) {
 		croak "day $day precedes the start of UTC";
 	}
 	if($max == $final && $day >= $segments[$final]->start_utc_day) {
-		eval { $segments[$final]->next; };
+		eval { local $SIG{__DIE__}; $segments[$final]->next; };
 		goto TRY_AGAIN if @segments != $final + 1;
 		croak "day $day has no UTC definition yet";
 	}
@@ -485,13 +483,13 @@ precedes the start of UTC or if UTC for the day has not yet been defined.
 		$day_seconds{$day} = $bigrat_86400 + $ls;
 		$end_day = $seg->end_utc_day;
 	};
-	sub utc_day_value($$$) {
+	sub _utc_day_value($$$) {
 		my($day, $hash, $default) = @_;
 		croak "non-integer day $day is invalid" unless $day->is_int;
 		croak "day $day precedes the start of UTC"
 			if $day < $segments[0]->start_utc_day;
 		if($day >= $end_day) {
-			eval { $segments[-1]->next; };
+			eval { local $SIG{__DIE__}; $segments[-1]->next; };
 			if($day >= $end_day) {
 				croak "day $day has no UTC definition yet";
 			}
@@ -501,11 +499,11 @@ precedes the start of UTC or if UTC for the day has not yet been defined.
 	}
 	sub utc_day_leap_seconds($) {
 		my($day) = @_;
-		return utc_day_value($day, \%day_leap_seconds, $bigrat_0);
+		return _utc_day_value($day, \%day_leap_seconds, $bigrat_0);
 	}
 	sub utc_day_seconds($) {
 		my($day) = @_;
-		return utc_day_value($day, \%day_seconds, $bigrat_86400);
+		return _utc_day_value($day, \%day_seconds, $bigrat_86400);
 	}
 }
 
@@ -658,7 +656,7 @@ may be zero or negative if a sufficiently negative day number is supplied.
 		(0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365);
 	my @leap_monthstarts =
 		(0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366);
-	sub monthstarts($) {
+	sub _monthstarts($) {
 		my($yr) = @_;
 		my $isleap = $yr % 4 == 0 ? $yr % 100 == 0 ?
 				$yr % 400 == 0 ? 1 : 0 : 1 : 0;
@@ -676,11 +674,11 @@ sub utc_day_to_ymd($) {
 	my $leaps = (($yr + 3) / 4)->bfloor;
 	$leaps -= (($leaps - 1) / 25)->bfloor unless $leaps->is_zero;
 	$day -= 365 * $yr + $leaps;
-	my $monthstarts = monthstarts($yr);
+	my $monthstarts = _monthstarts($yr);
 	if($day >= $monthstarts->[12]) {
 		$day -= $monthstarts->[12];
 		$yr++;
-		$monthstarts = monthstarts($yr);
+		$monthstarts = _monthstarts($yr);
 	}
 	my $mo = 1;
 	while($day >= $monthstarts->[$mo]) {
@@ -706,7 +704,7 @@ sub utc_ymd_to_day($$$) {
 	croak "invalid month number $mo"
 		unless $mo->is_int && $mo >= 1 && $mo <= 12;
 	$mo = $mo->numify;
-	my $monthstarts = monthstarts($yr);
+	my $monthstarts = _monthstarts($yr);
 	croak "invalid day number $dy"
 		unless $dy->is_int && $dy >= 1 &&
 			$dy <= $monthstarts->[$mo] - $monthstarts->[$mo - 1];
@@ -834,6 +832,8 @@ Andrew Main (Zefram) <zefram@fysh.org>
 =head1 COPYRIGHT
 
 Copyright (C) 2005, 2006, 2007 Andrew Main (Zefram) <zefram@fysh.org>
+
+=head1 LICENSE
 
 This module is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.
