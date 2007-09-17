@@ -261,9 +261,9 @@ use strict;
 
 use Carp qw(croak);
 use Math::BigRat 0.08;
-use Time::UTC::Segment;
+use Time::UTC::Segment 0.004;
 
-our $VERSION = "0.004";
+our $VERSION = "0.005";
 
 use base "Exporter";
 our @EXPORT_OK = qw(

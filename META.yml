@@ -1,6 +1,6 @@
 ---
 name: Time-UTC
-version: 0.004
+version: 0.005
 author:
   - 'Andrew Main (Zefram) <zefram@fysh.org>'
 abstract: manipulation of UTC in terms of TAI
@@ -9,6 +9,7 @@ resources:
   license: http://dev.perl.org/licenses/
 requires:
   Carp: 0
+  Digest::SHA1: 0
   Exporter: 0
   LWP: 5.5394
   LWP::UserAgent: 0
@@ -31,10 +32,10 @@ dynamic_config: 0
 provides:
   Time::UTC:
     file: lib/Time/UTC.pm
-    version: 0.004
+    version: 0.005
   Time::UTC::Segment:
     file: lib/Time/UTC/Segment.pm
-    version: 0.004
+    version: 0.005
 generated_by: Module::Build version 0.2808
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.2.html

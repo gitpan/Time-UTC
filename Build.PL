@@ -17,6 +17,7 @@ Module::Build->new(
 	},
 	requires => {
 		Carp => 0,
+		Digest::SHA1 => 0,
 		Exporter => 0,
 		LWP => "5.5394",
 		LWP::UserAgent => 0,

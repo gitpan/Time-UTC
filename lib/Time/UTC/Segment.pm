@@ -56,12 +56,13 @@ use warnings;
 use strict;
 
 use Carp qw(croak);
+use Digest::SHA1 qw(sha1_hex);
 use LWP 5.53_94;
 use LWP::UserAgent;
 use Math::BigRat 0.08;
 use Time::Unix 1.02 ();
 
-our $VERSION = "0.004";
+our $VERSION = "0.005";
 
 @Time::UTC::Segment::Complete::ISA = qw(Time::UTC::Segment);
 @Time::UTC::Segment::Incomplete::ISA = qw(Time::UTC::Segment);
@@ -140,8 +141,6 @@ use constant _JD_TO_MJD => Math::BigRat->new("2400000.5");
 
 use constant _TAI_EPOCH_MJD => Math::BigRat->new(36204);
 
-use constant _UNIX_EPOCH_MJD => Math::BigRat->new(40586);
-
 sub _add_data_from_tai_utc_dat($$) {
 	my($dat, $end_mjd) = @_;
 	my $seg;
@@ -213,24 +212,96 @@ sub _add_data_from_tai_utc_dat($$) {
 	}
 }
 
-{
-	my $tai_utc_location = "http://maia.usno.navy.mil/ser7/tai-utc.dat";
-	sub _download_latest_data() {
-		# Annoyingly, TAI-UTC data is not published with any
-		# indicator of the extent of its future validity.
-		# The IERS never says "there will be no leap second
-		# until at least 2005-06-30"; the latest TAI-UTC offset
-		# is always valid "until further notice".  However,
-		# leap seconds are supposed to be announced at least
-		# eight weeks in advance, so here we assume validity of
-		# the downloaded data seven weeks into the future.
-		my $unix_time = Time::Unix::time();
-		my $response = LWP::UserAgent->new->get($tai_utc_location);
-		return unless $response->code == 200;
-		use integer;
-		my $now_mjd = $unix_time/86400 + _UNIX_EPOCH_MJD;
-		_add_data_from_tai_utc_dat($response->content, $now_mjd + 7*7);
+use constant _UNIX_EPOCH_MJD => Math::BigRat->new(40586);
+
+sub _download_tai_utc_dat() {
+	# Annoyingly, TAI-UTC data is not published with any
+	# indicator of the extent of its future validity.
+	# The IERS never says "there will be no leap second
+	# until at least 2005-06-30"; the latest TAI-UTC offset
+	# is always valid "until further notice".  However,
+	# leap seconds are supposed to be announced at least
+	# eight weeks in advance, so here we assume validity of
+	# the downloaded data seven weeks into the future.
+	# For this reason we only do a direct get from USNO;
+	# we do not use proxies which might serve old data.
+	my $unix_time = Time::Unix::time();
+	my $response = LWP::UserAgent->new
+			->get("http://maia.usno.navy.mil/ser7/tai-utc.dat");
+	die "failed to download tai-utc.dat: ".$response->status_line
+		unless $response->code == 200;
+	use integer;
+	my $now_mjd = $unix_time/86400 + _UNIX_EPOCH_MJD;
+	_add_data_from_tai_utc_dat($response->content, $now_mjd + 7*7);
+}
+
+use constant _NTP_EPOCH_MJD => Math::BigRat->new(15020);
+
+sub _ntp_second_to_tai_day($) {
+	my($ntp_sec_str) = @_;
+	return Math::BigRat->new($ntp_sec_str) / 86400
+		+ _NTP_EPOCH_MJD - _TAI_EPOCH_MJD;
+}
+
+use constant _BIGRAT_ONE => Math::BigRat->new(1);
+
+sub _download_leap_seconds_list() {
+	my $response = LWP::UserAgent->new(env_proxy => 1)
+			->get("ftp://time-b.nist.gov/pub/leap-seconds.list");
+	die "failed to download leap-seconds.list: ".$response->status_line
+		unless $response->code == 200;
+	my $list = $response->content;
+	die "malformed leap-seconds.list" unless $list =~ /\n\z/;
+	$list =~ /^\#h([ \t0-9a-fA-F]+)$/m
+		or die "no hash in leap-seconds.list";
+	(my $hash = $1) =~ tr/A-F \t/a-f/d;
+	my $data_to_hash = "";
+	while($list =~ /^(?:\#[\$\@])?[ \t]*(\d[^\#\n]*)[#\n]/mg) {
+		$data_to_hash .= $1;
 	}
+	$data_to_hash =~ tr/0-9//cd;
+	die "hash mismatch in leap-seconds.list"
+		unless sha1_hex($data_to_hash) eq $hash;
+	my($start_utc_day, $start_tai_instant);
+	while($list =~ /^([^#\n][^\n]*)$/mg) {
+		my $line = $1;
+		$line =~ /\A[ \t]*(\d+)[ \t]+(\d+)[ \t]*(?:\#|\z)/
+			or die "malformed data line in leap-seconds.list";
+		my($next_start_ntp_sec, $ndiff) = ($1, $2);
+		my $next_start_utc_day =
+			_ntp_second_to_tai_day($next_start_ntp_sec);
+		die "bad transition date in leap-seconds.list"
+			unless $next_start_utc_day->is_int;
+		my $next_start_tai_instant =
+			$next_start_utc_day*86400 + Math::BigRat->new($ndiff);
+		if(defined $start_utc_day) {
+			_add_data($start_utc_day,
+				$start_tai_instant,
+				_BIGRAT_ONE,
+				$next_start_utc_day,
+				$next_start_tai_instant,
+				_BIGRAT_ONE);
+		}
+		$start_utc_day = $next_start_utc_day;
+		$start_tai_instant = $next_start_tai_instant;
+	}
+	$list =~ /^\#\@[ \t]*(\d+)[ \t]*$/m
+		or die "no expiry date in leap-seconds.list";
+	my $end_utc_day = _ntp_second_to_tai_day($1)->bfloor - 1;
+	if(defined $start_utc_day) {
+		_add_data($start_utc_day,
+			$start_tai_instant,
+			_BIGRAT_ONE,
+			$end_utc_day,
+			$start_tai_instant +
+				($end_utc_day - $start_utc_day) * 86400,
+			_BIGRAT_ONE);
+	}
+}
+
+sub _download_latest_data() {
+	eval { local $SIG{__DIE__}; _download_leap_seconds_list(); 1 }
+		or eval { local $SIG{__DIE__}; _download_tai_utc_dat(); 1 };
 }
 
 {
