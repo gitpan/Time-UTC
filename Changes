@@ -1,3 +1,22 @@
+version 0.006; 2009-05-19
+
+  * be more stringent in parsing leap second data files
+
+  * use simpler "parent" pragma in place of "base"
+
+  * in documentation, use the term "truth value" instead of the less
+    precise "boolean"
+
+  * drop prototypes from method subs (where the prototypes have no effect)
+
+  * update built-in data to 2010-01-01
+
+  * in tests, avoid unreliable "\d" and "\S" regexp elements
+
+  * use full stricture in Build.PL
+
+  * quote a stray dependency version number in Build.PL
+
 version 0.005; 2007-09-17
 
   * bugfix: in Time::UTC, ensure that the Time::UTC::Segment that is

@@ -1,4 +1,4 @@
-use Test::More tests => 1 + 3 + 16*37 + 6;
+use Test::More tests => 1 + 3 + 16*38 + 6;
 
 BEGIN {
 	use_ok "Time::UTC", qw(
@@ -27,13 +27,13 @@ my $epsilon = br("0.000000000001");
 my $seg = utc_start_segment();
 
 eval { utc_day_leap_seconds($seg->start_utc_day - 1); };
-like $@, qr/\Aday \d+ precedes the start of UTC /;
+like $@, qr/\Aday [0-9]+ precedes the start of UTC /;
 eval { utc_day_seconds($seg->start_utc_day - 1); };
-like $@, qr/\Aday \d+ precedes the start of UTC /;
+like $@, qr/\Aday [0-9]+ precedes the start of UTC /;
 eval { utc_check_instant($seg->start_utc_day - 1, br(0)); };
-like $@, qr/\Aday \d+ precedes the start of UTC /;
+like $@, qr/\Aday [0-9]+ precedes the start of UTC /;
 
-for(my $n = 37; $n--; $seg = $seg->next) {
+for(my $n = 38; $n--; $seg = $seg->next) {
 	match utc_day_leap_seconds($seg->start_utc_day), br(0);
 	match utc_day_seconds($seg->start_utc_day), br(86400);
 	eval { utc_check_instant($seg->start_utc_day, -$epsilon); };
@@ -62,14 +62,14 @@ for(my $n = 37; $n--; $seg = $seg->next) {
 }
 
 eval { utc_day_leap_seconds($seg->start_utc_day); };
-like $@, qr/\Aday \d+ has no UTC definition yet /;
+like $@, qr/\Aday [0-9]+ has no UTC definition yet /;
 eval { utc_day_seconds($seg->start_utc_day); };
-like $@, qr/\Aday \d+ has no UTC definition yet /;
+like $@, qr/\Aday [0-9]+ has no UTC definition yet /;
 eval { utc_check_instant($seg->start_utc_day, br(0)); };
-like $@, qr/\Aday \d+ has no UTC definition yet /;
+like $@, qr/\Aday [0-9]+ has no UTC definition yet /;
 eval { utc_day_leap_seconds($seg->start_utc_day + 1); };
-like $@, qr/\Aday \d+ has no UTC definition yet /;
+like $@, qr/\Aday [0-9]+ has no UTC definition yet /;
 eval { utc_day_seconds($seg->start_utc_day + 1); };
-like $@, qr/\Aday \d+ has no UTC definition yet /;
+like $@, qr/\Aday [0-9]+ has no UTC definition yet /;
 eval { utc_check_instant($seg->start_utc_day + 1, br(0)); };
-like $@, qr/\Aday \d+ has no UTC definition yet /;
+like $@, qr/\Aday [0-9]+ has no UTC definition yet /;

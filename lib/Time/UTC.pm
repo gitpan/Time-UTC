@@ -263,9 +263,9 @@ use Carp qw(croak);
 use Math::BigRat 0.08;
 use Time::UTC::Segment 0.004;
 
-our $VERSION = "0.005";
+our $VERSION = "0.006";
 
-use base "Exporter";
+use parent "Exporter";
 our @EXPORT_OK = qw(
 	utc_start_segment foreach_utc_segment_when_complete
 	utc_start_tai_instant utc_start_utc_day
@@ -831,7 +831,8 @@ Andrew Main (Zefram) <zefram@fysh.org>
 
 =head1 COPYRIGHT
 
-Copyright (C) 2005, 2006, 2007 Andrew Main (Zefram) <zefram@fysh.org>
+Copyright (C) 2005, 2006, 2007, 2009
+Andrew Main (Zefram) <zefram@fysh.org>
 
 =head1 LICENSE
 

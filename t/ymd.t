@@ -29,7 +29,7 @@ sub match_vec($$) {
 sub br(@) { Math::BigRat->new(@_) }
 
 eval { utc_day_to_ymd(br("0.5")); };
-like $@, qr/\Anon-integer day \S+ is invalid /;
+like $@, qr/\Anon-integer day [^\t\n\f\r ]+ is invalid /;
 
 eval { utc_ymd_to_day(br("0.5"), br(1), br(1)); };
 like $@, qr/\Ainvalid year number /;

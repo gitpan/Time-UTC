@@ -62,7 +62,7 @@ use LWP::UserAgent;
 use Math::BigRat 0.08;
 use Time::Unix 1.02 ();
 
-our $VERSION = "0.005";
+our $VERSION = "0.006";
 
 @Time::UTC::Segment::Complete::ISA = qw(Time::UTC::Segment);
 @Time::UTC::Segment::Incomplete::ISA = qw(Time::UTC::Segment);
@@ -93,7 +93,7 @@ my $incomplete_segment;
 			1096*86400 + Math::BigRat->new("1.4228180"),
 		utc_second_length => 1 + Math::BigRat->new("0.001296") / 86400,
 	}, "Time::UTC::Segment::Incomplete");
-	sub start($) {
+	sub start {
 		return $start_segment;
 	}
 }
@@ -146,11 +146,16 @@ sub _add_data_from_tai_utc_dat($$) {
 	my $seg;
 	while($dat =~ /\G([^\n]*\n)/g) {
 		my $line = $1;
-		$line =~ /\A\s*\d+\s*[A-Z]+\s*\d+\s*=\s*
-				JD\s*(\d+\.?\d*)\s*TAI\s*-\s*UTC\s*=\s*
-				(-?\d+\.?\d*)\s*S\s*([\+\-])\s*
-				\(\s*MJD\s*([\+\-])\s*(-?\d+\.?\d*)\s*\)\s*
-				X\s*(-?\d+\.?\d*)\s*S\s*\z/xi
+		$line =~ /\A[\ \t]*[0-9]+[\ \t]*[A-Z]+[\ \t]*[0-9]+[\ \t]*
+				=[\ \t]*
+				JD[\ \t]*([0-9]+\.?[0-9]*)[\ \t]*
+				TAI[\ \t]*-[\ \t]*UTC[\ \t]*=[\ \t]*
+				(-?[0-9]+\.?[0-9]*)[\ \t]*S[\ \t]*
+				([\+\-])[\ \t]*
+				\([\ \t]*MJD[\ \t]*([\+\-])[\ \t]*
+				(-?[0-9]+\.?[0-9]*)[\ \t]*\)[\ \t]*
+				X[\ \t]*(-?[0-9]+\.?[0-9]*)[\ \t]*S[\ \t]*
+				\n\z/xi
 			or die "bad TAI-UTC data\n";
 		my($start_jd, $base_difference, $tweak_sign, $base_mjd_sign,
 			 $base_mjd, $day_tweak) = ($1, $2, $3, $4, $5, $6);
@@ -203,8 +208,10 @@ sub _add_data_from_tai_utc_dat($$) {
 	my $init_dat = do { local $/ = undef; <DATA> };
 	close(DATA);
 	sub _use_builtin_knowledge() {
-		$init_dat =~ s/^\s*\d+\s*[A-Z]+\s*\d+\s*=\s*
-				JD\s*(\d+\.?\d*)\s*unknown\s*\z//xim
+		$init_dat =~ s/^[\ \t]*[0-9]+[\ \t]*[A-Z]+[\ \t]*[0-9]+[\ \t]*
+				=[\ \t]*
+				JD[\ \t]*([0-9]+\.?[0-9]*)[\ \t]*
+				unknown[\ \t]*\n\z//xim
 			or die "broken built-in TAI-UTC data\n";
 		my $end_jd = $1;
 		_add_data_from_tai_utc_dat($init_dat, $end_jd - _JD_TO_MJD);
@@ -256,7 +263,7 @@ sub _download_leap_seconds_list() {
 		or die "no hash in leap-seconds.list";
 	(my $hash = $1) =~ tr/A-F \t/a-f/d;
 	my $data_to_hash = "";
-	while($list =~ /^(?:\#[\$\@])?[ \t]*(\d[^\#\n]*)[#\n]/mg) {
+	while($list =~ /^(?:\#[\$\@])?[ \t]*([0-9][^\#\n]*)[#\n]/mg) {
 		$data_to_hash .= $1;
 	}
 	$data_to_hash =~ tr/0-9//cd;
@@ -265,7 +272,7 @@ sub _download_leap_seconds_list() {
 	my($start_utc_day, $start_tai_instant);
 	while($list =~ /^([^#\n][^\n]*)$/mg) {
 		my $line = $1;
-		$line =~ /\A[ \t]*(\d+)[ \t]+(\d+)[ \t]*(?:\#|\z)/
+		$line =~ /\A[ \t]*([0-9]+)[ \t]+([0-9]+)[ \t]*(?:\#|\z)/
 			or die "malformed data line in leap-seconds.list";
 		my($next_start_ntp_sec, $ndiff) = ($1, $2);
 		my $next_start_utc_day =
@@ -285,7 +292,7 @@ sub _download_leap_seconds_list() {
 		$start_utc_day = $next_start_utc_day;
 		$start_tai_instant = $next_start_tai_instant;
 	}
-	$list =~ /^\#\@[ \t]*(\d+)[ \t]*$/m
+	$list =~ /^\#\@[ \t]*([0-9]+)[ \t]*$/m
 		or die "no expiry date in leap-seconds.list";
 	my $end_utc_day = _ntp_second_to_tai_day($1)->bfloor - 1;
 	if(defined $start_utc_day) {
@@ -335,7 +342,7 @@ All numeric values are returned as C<Math::BigRat> objects.
 
 =cut
 
-sub _data_unavailable($$) {
+sub _data_unavailable {
 	my($self, $method) = @_;
 	if(defined $try_to_extend_knowledge) {
 		eval { local $SIG{__DIE__};
@@ -353,7 +360,7 @@ sub _data_unavailable($$) {
 
 sub _data_unavailable_method($) {
 	my($method) = @_;
-	return sub($) { $_[0]->_data_unavailable($method) };
+	return sub { $_[0]->_data_unavailable($method) };
 }
 
 =item $seg->start_tai_instant
@@ -363,7 +370,7 @@ giving the number of TAI seconds since the TAI epoch.
 
 =cut
 
-sub start_tai_instant($) {
+sub start_tai_instant {
 	$_[0]->{start_tai_instant}
 }
 
@@ -374,7 +381,7 @@ giving the number of TAI seconds since the TAI epoch.
 
 =cut
 
-sub Time::UTC::Segment::Complete::end_tai_instant($) {
+sub Time::UTC::Segment::Complete::end_tai_instant {
 	$_[0]->{next}->{start_tai_instant}
 }
 
@@ -388,7 +395,7 @@ C<Math::BigRat>.
 
 =cut
 
-sub Time::UTC::Segment::Complete::length_in_tai_seconds($) {
+sub Time::UTC::Segment::Complete::length_in_tai_seconds {
 	$_[0]->{length_in_tai_seconds}
 }
 
@@ -402,7 +409,7 @@ of days since the TAI epoch.
 
 =cut
 
-sub start_utc_day($) {
+sub start_utc_day {
 	$_[0]->{start_utc_day}
 }
 
@@ -413,7 +420,7 @@ of days since the TAI epoch.
 
 =cut
 
-sub Time::UTC::Segment::Complete::last_utc_day($) {
+sub Time::UTC::Segment::Complete::last_utc_day {
 	$_[0]->{last_utc_day}
 }
 
@@ -427,7 +434,7 @@ giving the number of days since the TAI epoch.
 
 =cut
 
-sub Time::UTC::Segment::Complete::end_utc_day($) {
+sub Time::UTC::Segment::Complete::end_utc_day {
 	$_[0]->{next}->{start_utc_day}
 }
 
@@ -441,7 +448,7 @@ as a C<Math::BigRat>.
 
 =cut
 
-sub utc_second_length($) {
+sub utc_second_length {
 	$_[0]->{utc_second_length}
 }
 
@@ -452,7 +459,7 @@ this segment, as a C<Math::BigRat>.  May be negative.
 
 =cut
 
-sub Time::UTC::Segment::Complete::leap_utc_seconds($) {
+sub Time::UTC::Segment::Complete::leap_utc_seconds {
 	$_[0]->{leap_utc_seconds}
 }
 
@@ -466,7 +473,7 @@ C<Math::BigRat>.
 
 =cut
 
-sub Time::UTC::Segment::Complete::last_day_utc_seconds($) {
+sub Time::UTC::Segment::Complete::last_day_utc_seconds {
 	$_[0]->{last_day_utc_seconds}
 }
 
@@ -480,7 +487,7 @@ C<Math::BigRat>.
 
 =cut
 
-sub Time::UTC::Segment::Complete::length_in_utc_seconds($) {
+sub Time::UTC::Segment::Complete::length_in_utc_seconds {
 	$_[0]->{length_in_utc_seconds}
 }
 
@@ -495,7 +502,7 @@ beginning of 1961.
 
 =cut
 
-sub prev($) {
+sub prev {
 	$_[0]->{prev}
 }
 
@@ -508,7 +515,7 @@ be C<undef>.
 
 =cut
 
-sub Time::UTC::Segment::Complete::next($) {
+sub Time::UTC::Segment::Complete::next {
 	$_[0]->{next}
 }
 
@@ -535,13 +542,13 @@ Only one incomplete segment exists at a time.
 
 =item $seg->complete_p
 
-Returns a boolean indicating whether the segment is currently complete.
+Returns a truth value indicating whether the segment is currently complete.
 
 =cut
 
-sub Time::UTC::Segment::Complete::complete_p($) { 1 }
+sub Time::UTC::Segment::Complete::complete_p { 1 }
 
-sub Time::UTC::Segment::Incomplete::complete_p($) { 0 }
+sub Time::UTC::Segment::Incomplete::complete_p { 0 }
 
 =item $seg->when_complete(WHAT)
 
@@ -556,12 +563,12 @@ see C<foreach_utc_segment_when_complete> in C<Time::UTC>.
 
 =cut
 
-sub Time::UTC::Segment::Complete::when_complete($$) {
+sub Time::UTC::Segment::Complete::when_complete {
 	my($self, $what) = @_;
 	eval { local $SIG{__DIE__}; $what->(); };
 }
 
-sub Time::UTC::Segment::Incomplete::when_complete($$) {
+sub Time::UTC::Segment::Incomplete::when_complete {
 	my($self, $what) = @_;
 	push @{$self->{when_complete}}, $what;
 }
@@ -602,7 +609,8 @@ Andrew Main (Zefram) <zefram@fysh.org>
 
 =head1 COPYRIGHT
 
-Copyright (C) 2005, 2006, 2007 Andrew Main (Zefram) <zefram@fysh.org>
+Copyright (C) 2005, 2006, 2007, 2009
+Andrew Main (Zefram) <zefram@fysh.org>
 
 =head1 LICENSE
 
@@ -651,4 +659,5 @@ __DATA__
 1997 JUL  1 =JD 2450630.5  TAI-UTC=  31.0       S + (MJD - 41317.) X 0.0      S
 1999 JAN  1 =JD 2451179.5  TAI-UTC=  32.0       S + (MJD - 41317.) X 0.0      S
 2006 JAN  1 =JD 2453736.5  TAI-UTC=  33.0       S + (MJD - 41317.) X 0.0      S
-2008 JUL  1 =JD 2454648.5  unknown
+2009 JAN  1 =JD 2454832.5  TAI-UTC=  34.0       S + (MJD - 41317.) X 0.0      S
+2010 JAN  1 =JD 2455197.5  unknown

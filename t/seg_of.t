@@ -1,4 +1,4 @@
-use Test::More tests => 37*4 + 7;
+use Test::More tests => 38*4 + 7;
 
 BEGIN {
 	use_ok "Time::UTC", qw(
@@ -18,11 +18,11 @@ my $epsilon = Math::BigRat->new("0.000000000001");
 my $seg = utc_start_segment();
 
 eval { utc_segment_of_utc_day($seg->start_utc_day - 1); };
-like $@, qr/\Aday \d+ precedes the start of UTC /;
+like $@, qr/\Aday [0-9]+ precedes the start of UTC /;
 eval { utc_segment_of_tai_instant($seg->start_tai_instant - $epsilon); };
-like $@, qr/\Ainstant \S+ precedes the start of UTC /;
+like $@, qr/\Ainstant [^\t\n\f\r ]+ precedes the start of UTC /;
 
-for(my $n = 37; $n--; $seg = $seg->next) {
+for(my $n = 38; $n--; $seg = $seg->next) {
 	ok utc_segment_of_utc_day($seg->start_utc_day) == $seg;
 	ok utc_segment_of_tai_instant($seg->start_tai_instant) == $seg;
 	ok utc_segment_of_utc_day($seg->last_utc_day) == $seg;
@@ -31,10 +31,10 @@ for(my $n = 37; $n--; $seg = $seg->next) {
 }
 
 eval { utc_segment_of_utc_day($seg->start_utc_day); };
-like $@, qr/\Aday \d+ has no UTC definition yet /;
+like $@, qr/\Aday [0-9]+ has no UTC definition yet /;
 eval { utc_segment_of_tai_instant($seg->start_tai_instant); };
-like $@, qr/\Ainstant \S+ has no UTC definition yet /;
+like $@, qr/\Ainstant [^\t\n\f\r ]+ has no UTC definition yet /;
 eval { utc_segment_of_utc_day($seg->start_utc_day + 1); };
-like $@, qr/\Aday \d+ has no UTC definition yet /;
+like $@, qr/\Aday [0-9]+ has no UTC definition yet /;
 eval { utc_segment_of_tai_instant($seg->start_tai_instant + $epsilon); };
-like $@, qr/\Ainstant \S+ has no UTC definition yet /;
+like $@, qr/\Ainstant [^\t\n\f\r ]+ has no UTC definition yet /;

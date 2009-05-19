@@ -12,7 +12,7 @@ sub match($$) {
 sub br(@) { Math::BigRat->new(@_) }
 
 eval { utc_day_to_cjdn(br("0.5")); };
-like $@, qr/\Anon-integer day \S+ is invalid /;
+like $@, qr/\Anon-integer day [^\t\n\f\r ]+ is invalid /;
 
 eval { utc_cjdn_to_day(br("0.5")); };
 like $@, qr/\Ainvalid CJDN /;

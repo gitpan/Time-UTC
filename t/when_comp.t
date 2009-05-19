@@ -35,11 +35,11 @@ is $done_segs, 0;
 utc_day_seconds(Math::BigRat->new(2000));
 
 is $done_sseg, 1;
-is $done_segs, 37;
-is $chained_segs, 37;
+is $done_segs, 38;
+is $chained_segs, 38;
 
 utc_day_seconds(Math::BigRat->new(2000));
 
 is $done_sseg, 1;
-is $done_segs, 37;
-is $chained_segs, 37;
+is $done_segs, 38;
+is $chained_segs, 38;
