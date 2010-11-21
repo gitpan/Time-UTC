@@ -1,3 +1,6 @@
+use warnings;
+use strict;
+
 use Test::More tests => 38*4 + 7;
 
 BEGIN {
@@ -9,10 +12,10 @@ BEGIN {
 
 {
 	no warnings "redefine";
-	sub Time::UTC::Segment::_download_latest_data() { }
+	sub Time::UTC::Segment::_download_latest_data() { 0 }
 }
 
-use Math::BigRat 0.03;
+use Math::BigRat 0.13;
 
 my $epsilon = Math::BigRat->new("0.000000000001");
 my $seg = utc_start_segment();
@@ -38,3 +41,5 @@ eval { utc_segment_of_utc_day($seg->start_utc_day + 1); };
 like $@, qr/\Aday [0-9]+ has no UTC definition yet /;
 eval { utc_segment_of_tai_instant($seg->start_tai_instant + $epsilon); };
 like $@, qr/\Ainstant [^\t\n\f\r ]+ has no UTC definition yet /;
+
+1;

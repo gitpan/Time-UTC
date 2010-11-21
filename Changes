@@ -1,3 +1,27 @@
+version 0.007; 2010-11-21
+
+  * bugfix: require bugfixed version of Math::BigRat (for construction
+    from decimal fraction strings)
+
+  * after an attempted download of leap second data fails, retry after
+    one to two hours, rather than the 20 to 22 days that we wait before
+    attempting another update following a successful download
+
+  * check for required Perl version at runtime
+
+  * avoid latent bug of passing magic variables $1 et al into functions
+    where in the future they might unexpectedly change value
+
+  * update built-in data to 2011-07-01
+
+  * use full stricture in test suite
+
+  * in Build.PL, explicitly declare configure-time requirements
+
+  * remove bogus "exit 0" from Build.PL
+
+  * add MYMETA.yml to .cvsignore
+
 version 0.006; 2009-05-19
 
   * be more stringent in parsing leap second data files

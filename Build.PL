@@ -1,3 +1,4 @@
+{ use 5.006; }
 use warnings;
 use strict;
 
@@ -6,6 +7,12 @@ use Module::Build;
 Module::Build->new(
 	module_name => "Time::UTC",
 	license => "perl",
+	configure_requires => {
+		"Module::Build" => 0,
+		"perl" => "5.006",
+		"strict" => 0,
+		"warnings" => 0,
+	},
 	build_requires => {
 		"Math::BigRat" => "0.04",
 		"Module::Build" => 0,
@@ -20,7 +27,7 @@ Module::Build->new(
 		"Exporter" => 0,
 		"LWP" => "5.5394",
 		"LWP::UserAgent" => 0,
-		"Math::BigRat" => "0.08",
+		"Math::BigRat" => "0.13",
 		"Time::Unix" => "1.02",
 		"constant" => 0,
 		"integer" => 0,
@@ -35,4 +42,4 @@ Module::Build->new(
 	sign => 1,
 )->create_build_script;
 
-exit 0;
+1;

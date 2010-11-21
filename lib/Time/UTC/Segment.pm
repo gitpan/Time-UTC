@@ -52,6 +52,7 @@ availability of information.
 
 package Time::UTC::Segment;
 
+{ use 5.006; }
 use warnings;
 use strict;
 
@@ -59,10 +60,10 @@ use Carp qw(croak);
 use Digest::SHA1 qw(sha1_hex);
 use LWP 5.53_94;
 use LWP::UserAgent;
-use Math::BigRat 0.08;
+use Math::BigRat 0.13;
 use Time::Unix 1.02 ();
 
-our $VERSION = "0.006";
+our $VERSION = "0.007";
 
 @Time::UTC::Segment::Complete::ISA = qw(Time::UTC::Segment);
 @Time::UTC::Segment::Incomplete::ISA = qw(Time::UTC::Segment);
@@ -294,7 +295,8 @@ sub _download_leap_seconds_list() {
 	}
 	$list =~ /^\#\@[ \t]*([0-9]+)[ \t]*$/m
 		or die "no expiry date in leap-seconds.list";
-	my $end_utc_day = _ntp_second_to_tai_day($1)->bfloor - 1;
+	my $expsec = $1;
+	my $end_utc_day = _ntp_second_to_tai_day($expsec)->bfloor - 1;
 	if(defined $start_utc_day) {
 		_add_data($start_utc_day,
 			$start_tai_instant,
@@ -318,8 +320,9 @@ sub _download_latest_data() {
 		my $time = time;
 		return unless $time >= $wait_until || $time < $last_download;
 		$last_download = $time;
-		$wait_until = $last_download + 20*86400 + rand(2*86400);
-		eval { local $SIG{__DIE__}; _download_latest_data(); };
+		$wait_until = $last_download + 3600 + rand(3600);
+		_download_latest_data() and
+			$wait_until = $last_download + 20*86400 + rand(2*86400);
 	}
 }
 
@@ -609,7 +612,7 @@ Andrew Main (Zefram) <zefram@fysh.org>
 
 =head1 COPYRIGHT
 
-Copyright (C) 2005, 2006, 2007, 2009
+Copyright (C) 2005, 2006, 2007, 2009, 2010
 Andrew Main (Zefram) <zefram@fysh.org>
 
 =head1 LICENSE
@@ -660,4 +663,4 @@ __DATA__
 1999 JAN  1 =JD 2451179.5  TAI-UTC=  32.0       S + (MJD - 41317.) X 0.0      S
 2006 JAN  1 =JD 2453736.5  TAI-UTC=  33.0       S + (MJD - 41317.) X 0.0      S
 2009 JAN  1 =JD 2454832.5  TAI-UTC=  34.0       S + (MJD - 41317.) X 0.0      S
-2010 JAN  1 =JD 2455197.5  unknown
+2011 JUL  1 =JD 2455743.5  unknown

@@ -256,14 +256,15 @@ UTC is not defined for dates prior to 1961.
 
 package Time::UTC;
 
+{ use 5.006; }
 use warnings;
 use strict;
 
 use Carp qw(croak);
 use Math::BigRat 0.08;
-use Time::UTC::Segment 0.004;
+use Time::UTC::Segment 0.007;
 
-our $VERSION = "0.006";
+our $VERSION = "0.007";
 
 use parent "Exporter";
 our @EXPORT_OK = qw(
@@ -831,7 +832,7 @@ Andrew Main (Zefram) <zefram@fysh.org>
 
 =head1 COPYRIGHT
 
-Copyright (C) 2005, 2006, 2007, 2009
+Copyright (C) 2005, 2006, 2007, 2009, 2010
 Andrew Main (Zefram) <zefram@fysh.org>
 
 =head1 LICENSE

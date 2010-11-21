@@ -1,10 +1,13 @@
+use warnings;
+use strict;
+
 use Test::More tests => 8*38 + 10;
 
 BEGIN { use_ok "Time::UTC", qw(utc_start_segment); }
 
 {
 	no warnings "redefine";
-	sub Time::UTC::Segment::_download_latest_data() { }
+	sub Time::UTC::Segment::_download_latest_data() { 0 }
 }
 
 use Math::BigRat 0.04;
@@ -38,3 +41,5 @@ foreach my $method (qw(length_in_tai_seconds end_tai_instant last_utc_day
 	eval { $seg->$method; };
 	like $@, qr/\Adata not available yet /;
 }
+
+1;

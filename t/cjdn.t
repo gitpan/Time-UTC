@@ -1,8 +1,11 @@
+use warnings;
+use strict;
+
 use Test::More tests => 9;
 
 BEGIN { use_ok "Time::UTC", qw(utc_day_to_cjdn utc_cjdn_to_day); }
 
-use Math::BigRat 0.04;
+use Math::BigRat 0.13;
 
 sub match($$) {
 	my($a, $b) = @_;
@@ -26,3 +29,5 @@ sub check($$) {
 check(br(-1), br(2436204));
 check(br(0), br(2436205));
 check(br(365*41 + 10), br(2451180));
+
+1;

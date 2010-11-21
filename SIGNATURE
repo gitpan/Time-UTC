@@ -1,5 +1,5 @@
 This file contains message digests of all files listed in MANIFEST,
-signed via the Module::Signature module, version 0.55.
+signed via the Module::Signature module, version 0.66.
 
 To verify the content in this distribution, first make sure you have
 Module::Signature installed, then type:
@@ -14,32 +14,32 @@ not run its Makefile.PL or Build.PL.
 -----BEGIN PGP SIGNED MESSAGE-----
 Hash: SHA1
 
-SHA1 bf430af5f652eeb005522fc6b12d46f3f40c711c .cvsignore
-SHA1 f7a3b4b22ba424a1f91e4ce97e36680729828492 Build.PL
-SHA1 4a0273ae382e8f1e3ae903410903bf11b8bba69b Changes
+SHA1 23787c87d2ab4a059dac599cf31d67a022a7bbc0 .cvsignore
+SHA1 d4b35461993b52e26cc47aa7080db500813f4c6a Build.PL
+SHA1 b226d46f700f638bcc30003c7bdc014139192915 Changes
 SHA1 b4b70bf8f4ddb0c54e1dfaec6f1c757ca69d6ba8 MANIFEST
-SHA1 35f7052b74b41c0fc23e9bcfa2eeabf0602785d1 META.yml
-SHA1 f39315b8e83202006e8a916c6a58725d104f75ec Makefile.PL
-SHA1 228e2754931fb8ceb5d8f1090d8b79643ffe7c07 README
-SHA1 80aa7a7851a6cb7200bb5236920e3271467ca00a lib/Time/UTC.pm
-SHA1 b533e2147a5b767767127b17f37544ca2d5c3e16 lib/Time/UTC/Segment.pm
-SHA1 0d4453ccc13403d3384f5af3a6a3eb80f6cae90e t/builtin.t
-SHA1 a50c3d6f7848c97add5b50826e704131b36ea456 t/cjdn.t
-SHA1 253c8c0ca6f481ff075393b3a199a5f68613d92e t/day.t
-SHA1 d3129be37226612aa83f92b66825438ff12acb21 t/hms.t
-SHA1 838a28a0b7fcc29e980aca70e38ae8ce27ad7473 t/mjdn.t
-SHA1 0e141eecf3ca4903ef38d9413b5403a9ddb0392f t/pod_cvg.t
-SHA1 74a957cd8b93f25672ecc6aa578a671d084dd343 t/pod_syn.t
-SHA1 64db95a349701a45e988a6c219ec4e216558cde7 t/seg_of.t
-SHA1 468ccfa989d75c9c178d4a3fa665c47dc89ba33e t/segments.t
-SHA1 ad6bd16610c2ab7acf597db5ed60b68495a48936 t/start.t
-SHA1 ea048f144326f93711fd42b4cba591dd4399bcb0 t/when_comp.t
-SHA1 0954b301a477ab0e8e3487b5165729bc1af054d7 t/ymd.t
-SHA1 8168ed89deb765b87c0298195643f80dcf5700ae t/ymdhms.t
+SHA1 1c0d9ee3cfcdc308004d68a90f92ce8667f8c0ef META.yml
+SHA1 caae608231ffe78390c76451ade51a7cfc87a9f9 Makefile.PL
+SHA1 71d76da99209ae10c16628f1bbfe8651869f5a5d README
+SHA1 0f89123a2bffd7d631776ecb60595f16f74d63d5 lib/Time/UTC.pm
+SHA1 c0b36bf322fb3f2f9895a49e13545fcbfd82d335 lib/Time/UTC/Segment.pm
+SHA1 1b89476221f02aa902cc5fa30bf977d8b55bbef1 t/builtin.t
+SHA1 d0e85e57034489396dc9e305b2a140d3034ec22c t/cjdn.t
+SHA1 59db68b91f439454955a22d9e046b04af7124b65 t/day.t
+SHA1 49514d3a2e87f2041572cf9e854ac1f5da1c3c75 t/hms.t
+SHA1 2ad1a4e25eabcb572912d31688f239acbef85d4f t/mjdn.t
+SHA1 904d9a4f76525e2303e4b0c168c68230f223c8de t/pod_cvg.t
+SHA1 65c75abdef6f01a5d1588a307f2ddfe2333dc961 t/pod_syn.t
+SHA1 b3274ec71d1434dc65f97b828c285158ff8691a2 t/seg_of.t
+SHA1 7c558cc8539f61e835e2dfc6fa6921f3ddcbcf1a t/segments.t
+SHA1 aa384924c90cc7480b5be1eebd4ca68d3d6fc65d t/start.t
+SHA1 1821dd13d6fca5b190b59cccdc7a8c54fdc420ab t/when_comp.t
+SHA1 ab85bdc01855bdddb6bf6999c27960e46cdb2358 t/ymd.t
+SHA1 409b2c7b06b11041eac60a1079d8a08052050035 t/ymdhms.t
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.9 (GNU/Linux)
 
-iEYEARECAAYFAkoTINAACgkQOV9mt2VyAVEspwCghm+6wF+QzhqGZR8NTeMs2Q5O
-ZhwAoI5BytIAdiQDyMFANlqx49c4fd0p
-=o20o
+iEYEARECAAYFAkzpHyEACgkQOV9mt2VyAVH+YgCgpFZXYn+NVxiSZl2vkdzH07KU
+7zcAoKQHrbRDufXIBadHuZgP9gUe/IBl
+=KFol
 -----END PGP SIGNATURE-----

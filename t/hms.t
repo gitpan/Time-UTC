@@ -1,8 +1,11 @@
+use warnings;
+use strict;
+
 use Test::More tests => 24;
 
 BEGIN { use_ok "Time::UTC", qw(utc_secs_to_hms utc_hms_to_secs); }
 
-use Math::BigRat 0.04;
+use Math::BigRat 0.13;
 
 sub match_val($$) {
 	my($a, $b) = @_;
@@ -59,3 +62,5 @@ check(br("3723.4"), br(1), br(2), br("3.4"));
 check(br("86399.9"), br(23), br(59), br("59.9"));
 check(br(86400), br(23), br(59), br(60));
 check(br("86400.1"), br(23), br(59), br("60.1"));
+
+1;

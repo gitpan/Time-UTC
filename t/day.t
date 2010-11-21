@@ -1,3 +1,6 @@
+use warnings;
+use strict;
+
 use Test::More tests => 1 + 3 + 16*38 + 6;
 
 BEGIN {
@@ -8,7 +11,7 @@ BEGIN {
 	);
 }
 
-use Math::BigRat 0.04;
+use Math::BigRat 0.13;
 
 sub match($$) {
 	my($a, $b) = @_;
@@ -21,7 +24,7 @@ my $epsilon = br("0.000000000001");
 
 {
 	no warnings "redefine";
-	sub Time::UTC::Segment::_download_latest_data() { }
+	sub Time::UTC::Segment::_download_latest_data() { 0 }
 }
 
 my $seg = utc_start_segment();
@@ -73,3 +76,5 @@ eval { utc_day_seconds($seg->start_utc_day + 1); };
 like $@, qr/\Aday [0-9]+ has no UTC definition yet /;
 eval { utc_check_instant($seg->start_utc_day + 1, br(0)); };
 like $@, qr/\Aday [0-9]+ has no UTC definition yet /;
+
+1;

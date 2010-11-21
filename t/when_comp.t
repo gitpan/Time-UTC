@@ -1,3 +1,6 @@
+use warnings;
+use strict;
+
 use Test::More tests => 9;
 
 BEGIN {
@@ -11,7 +14,7 @@ use Math::BigRat 0.02;
 
 {
 	no warnings "redefine";
-	sub Time::UTC::Segment::_download_latest_data() { }
+	sub Time::UTC::Segment::_download_latest_data() { 0 }
 }
 
 my $done_sseg = 0;
@@ -43,3 +46,5 @@ utc_day_seconds(Math::BigRat->new(2000));
 is $done_sseg, 1;
 is $done_segs, 38;
 is $chained_segs, 38;
+
+1;
