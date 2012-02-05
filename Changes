@@ -1,3 +1,20 @@
+version 0.008; 2012-02-05
+
+  * download leap-seconds.list from more reliable server
+    utcnist2.colorado.edu
+
+  * use HTTP::Tiny and Net::FTP instead of heavyweight LWP
+
+  * update built-in data to 2013-01-01
+
+  * add author tests for downloading data
+
+  * include META.json in distribution
+
+  * convert .cvsignore to .gitignore
+
+  * add MYMETA.json to .cvsignore
+
 version 0.007; 2010-11-21
 
   * bugfix: require bugfixed version of Math::BigRat (for construction

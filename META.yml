@@ -3,7 +3,7 @@ abstract: 'manipulation of UTC in terms of TAI'
 author:
   - 'Andrew Main (Zefram) <zefram@fysh.org>'
 build_requires:
-  Math::BigRat: 0.04
+  Math::BigRat: 0.13
   Module::Build: 0
   Test::More: 0
   perl: 5.006
@@ -14,9 +14,8 @@ configure_requires:
   perl: 5.006
   strict: 0
   warnings: 0
-distribution_type: module
 dynamic_config: 0
-generated_by: 'Module::Build version 0.3607'
+generated_by: 'Module::Build version 0.38, CPAN::Meta::Converter version 2.112621'
 license: perl
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
@@ -25,17 +24,17 @@ name: Time-UTC
 provides:
   Time::UTC:
     file: lib/Time/UTC.pm
-    version: 0.007
+    version: 0.008
   Time::UTC::Segment:
     file: lib/Time/UTC/Segment.pm
-    version: 0.007
+    version: 0.008
 requires:
   Carp: 0
   Digest::SHA1: 0
   Exporter: 0
-  LWP: 5.5394
-  LWP::UserAgent: 0
+  HTTP::Tiny: 0.016
   Math::BigRat: 0.13
+  Net::FTP: 1.21
   Time::Unix: 1.02
   constant: 0
   integer: 0
@@ -45,4 +44,4 @@ requires:
   warnings: 0
 resources:
   license: http://dev.perl.org/licenses/
-version: 0.007
+version: 0.008

@@ -58,12 +58,12 @@ use strict;
 
 use Carp qw(croak);
 use Digest::SHA1 qw(sha1_hex);
-use LWP 5.53_94;
-use LWP::UserAgent;
+use HTTP::Tiny 0.016 ();
 use Math::BigRat 0.13;
+use Net::FTP 1.21 ();
 use Time::Unix 1.02 ();
 
-our $VERSION = "0.007";
+our $VERSION = "0.008";
 
 @Time::UTC::Segment::Complete::ISA = qw(Time::UTC::Segment);
 @Time::UTC::Segment::Incomplete::ISA = qw(Time::UTC::Segment);
@@ -234,13 +234,15 @@ sub _download_tai_utc_dat() {
 	# For this reason we only do a direct get from USNO;
 	# we do not use proxies which might serve old data.
 	my $unix_time = Time::Unix::time();
-	my $response = LWP::UserAgent->new
-			->get("http://maia.usno.navy.mil/ser7/tai-utc.dat");
-	die "failed to download tai-utc.dat: ".$response->status_line
-		unless $response->code == 200;
+	my $httpresp = HTTP::Tiny->new->get(
+			"http://maia.usno.navy.mil/ser7/tai-utc.dat");
+	unless($httpresp->{status} == 200) {
+		die "failed to download tai-utc.dat: ".
+			"@{[$httpresp->{status}]} @{[$httpresp->{reason}]}\n";
+	}
 	use integer;
 	my $now_mjd = $unix_time/86400 + _UNIX_EPOCH_MJD;
-	_add_data_from_tai_utc_dat($response->content, $now_mjd + 7*7);
+	_add_data_from_tai_utc_dat($httpresp->{content}, $now_mjd + 7*7);
 }
 
 use constant _NTP_EPOCH_MJD => Math::BigRat->new(15020);
@@ -254,11 +256,29 @@ sub _ntp_second_to_tai_day($) {
 use constant _BIGRAT_ONE => Math::BigRat->new(1);
 
 sub _download_leap_seconds_list() {
-	my $response = LWP::UserAgent->new(env_proxy => 1)
-			->get("ftp://time-b.nist.gov/pub/leap-seconds.list");
-	die "failed to download leap-seconds.list: ".$response->status_line
-		unless $response->code == 200;
-	my $list = $response->content;
+	my $ftp = Net::FTP->new("utcnist2.colorado.edu")
+		or die "failed to download leap-seconds.list: FTP error: $@\n";
+	$ftp->login("anonymous","-anonymous\@")
+		or die "failed to download leap-seconds.list: FTP error: ".
+			$ftp->message;
+	$ftp->binary
+		or die "failed to download leap-seconds.list: FTP error: ".
+			$ftp->message;
+	$ftp->cwd("pub")
+		or die "failed to download leap-seconds.list: FTP error: ".
+			$ftp->message;
+	my $ftpd = $ftp->retr("leap-seconds.list")
+		or die "failed to download leap-seconds.list: FTP error: ".
+			$ftp->message;
+	my $list = "";
+	while(1) {
+		my $n = $ftpd->sysread($list, 4096, length($list));
+		defined $n or die "failed to download leap-seconds.list: $!\n";
+		last if $n == 0;
+	}
+	$ftpd->close
+		or die "failed to download leap-seconds.list: FTP error: ".
+			$ftp->message;
 	die "malformed leap-seconds.list" unless $list =~ /\n\z/;
 	$list =~ /^\#h([ \t0-9a-fA-F]+)$/m
 		or die "no hash in leap-seconds.list";
@@ -612,7 +632,7 @@ Andrew Main (Zefram) <zefram@fysh.org>
 
 =head1 COPYRIGHT
 
-Copyright (C) 2005, 2006, 2007, 2009, 2010
+Copyright (C) 2005, 2006, 2007, 2009, 2010, 2012
 Andrew Main (Zefram) <zefram@fysh.org>
 
 =head1 LICENSE
@@ -663,4 +683,5 @@ __DATA__
 1999 JAN  1 =JD 2451179.5  TAI-UTC=  32.0       S + (MJD - 41317.) X 0.0      S
 2006 JAN  1 =JD 2453736.5  TAI-UTC=  33.0       S + (MJD - 41317.) X 0.0      S
 2009 JAN  1 =JD 2454832.5  TAI-UTC=  34.0       S + (MJD - 41317.) X 0.0      S
-2011 JUL  1 =JD 2455743.5  unknown
+2012 JUL  1 =JD 2456109.5  TAI-UTC=  35.0       S + (MJD - 41317.) X 0.0      S
+2013 JAN  1 =JD 2456293.5  unknown

@@ -38,13 +38,13 @@ is $done_segs, 0;
 utc_day_seconds(Math::BigRat->new(2000));
 
 is $done_sseg, 1;
-is $done_segs, 38;
-is $chained_segs, 38;
+is $done_segs, 39;
+is $chained_segs, 39;
 
 utc_day_seconds(Math::BigRat->new(2000));
 
 is $done_sseg, 1;
-is $done_segs, 38;
-is $chained_segs, 38;
+is $done_segs, 39;
+is $chained_segs, 39;
 
 1;
